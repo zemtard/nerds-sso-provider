@@ -2,7 +2,7 @@
 
 # SETUP
 
-## Build required packages
+## Install required packages
 
 ```sh
 npm install

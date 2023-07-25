@@ -10,7 +10,7 @@ const secretKey = process.env.SECRET_KEY;
 
 
 app.use(cors({
-    origin: "http://"+ process.env.FRONTEND,
+    origin: "http://" + process.env.FRONTEND,
 }))
 
 
@@ -22,54 +22,51 @@ const port = process.env.PORT;
 
 let users = [];
 
-
-
-
 app.get("/status", async (req, res) => {
     res.send("im online");
     console.log("[ENDPOINT] GET STATUS");
-  });
+});
 
 
-  app.post('/user-login', async (req, res) => {
+app.post('/user-login', async (req, res) => {
     try {
-      const requestData = req.body; // receive the request
-      let message = 'POST request successfully received, logging in';
-      console.log(requestData);
-  
-      // Check if email and password exist
-      if (requestData.username && requestData.password) {
-        // Check if email and password match the stored data
-        const user_username = users.find((user) => user.username === requestData.username);
-        const user_passw = users.find((user) => user.password === requestData.password);
-  
-        if (user_username && user_passw) {
-          console.log("Email and password matching");
-  
-          
-          const token = jwt.sign({ username: user_username }, secretKey, {
-            expiresIn: '6h',
-          });
-  
-          res.json({ message, token });
+        const requestData = req.body; // receive the request
+        let message = 'POST request successfully received, logging in';
+        console.log(requestData);
+
+        // Check if email and password exist
+        if (requestData.username && requestData.password) {
+            // Check if email and password match the stored data
+            const user_username = users.find((user) => user.username === requestData.username);
+            const user_passw = users.find((user) => user.password === requestData.password);
+
+            if (user_username && user_passw) {
+                console.log("Email and password matching");
+
+
+                const token = jwt.sign({ username: user_username }, secretKey, {
+                    expiresIn: '6h',
+                });
+
+                res.json({ message, token });
+            } else {
+                message = 'Incorrect email or password!';
+                res.status(401).json({ message });
+            }
         } else {
-          message = 'Incorrect email or password!';
-          res.status(401).json({ message });
+            message = 'Empty fields';
+            res.status(400).json({ message });
         }
-      } else {
-        message = 'Empty fields'; 
-        res.status(400).json({ message });
-      }
-  
-      console.log("Post endpoint called");
+
+        console.log("Post endpoint called");
     } catch (error) {
-      console.error('Error occurred:', error);
-      res.status(500).json({ message: 'An error occurred.' });
+        console.error('Error occurred:', error);
+        res.status(500).json({ message: 'An error occurred.' });
     }
-  });
+});
 
 
-  app.post('/user-register', (req, res) => {
+app.post('/user-register', (req, res) => {
     const requestData = req.body; // receive the register request
     //console.log(requestData);
     let message = 'POST request successfully received, creating a new user'
@@ -98,26 +95,24 @@ app.get("/status", async (req, res) => {
     res.json({ message });
 });
 
-
-
-
-  app.use( //ROUTES UNDER THIS FUNCTION REQUIRES AUTHORIZATION
+app.use( //ROUTES UNDER THIS FUNCTION REQUIRES AUTHORIZATION
     auth({
-      issuerBaseURL: 'http://127.0.0.1:5173',
-      audience: 'http://127.0.0.1:3000',
+        issuerBaseURL: "127.0.0.1:5173",
+        audience: "127.0.0.1:3000",
     })
-  );
+);
 
-  app.get("/status1", auth, async (req, res) => {
+app.get("/status1", async (req, res) => { //REQUIRES AUTHORIZATION TO ACCESS
     try {
-    res.send("im online PROTECTED");
-    console.log("[ENDPOINT] GET STATUS");
+
+        res.send("im online PROTECTED");
+        console.log("[ENDPOINT] GET STATUS");
     } catch (error) {
         res.send(error)
     }
-    
-  });
 
-  app.listen(port, hostname, () => {
+});
+
+app.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
-  });
+});
