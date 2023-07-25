@@ -3,10 +3,14 @@ const bodyParser = require("body-parser");
 const app = express();
 const cors = require('cors')
 const { auth } = require('express-oauth2-jwt-bearer');
+const jwt = require('jsonwebtoken');
+
 
 app.use(cors({
     origin: "http://127.0.0.1:5173",
 }))
+
+
 
 app.use(bodyParser.json());
 
@@ -18,43 +22,47 @@ let users = [];
 
 
 
-app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-
-
 app.get("/status", async (req, res) => {
     res.send("im online");
     console.log("[ENDPOINT] GET STATUS");
   });
 
 
-app.post('/user-login', (req, res) => {
-
-    const requestData = req.body; //receive the request
-    let message = 'POST request successfully received, logging in';
-    console.log(requestData);
-
-    //Check if email and password exists
-    if(requestData.username && requestData.password){
-        //Check if email and password matches the stored data
-        const user_username = users.find((user) => user.username === requestData.username)
-        const user_passw = users.find((user) => user.password === requestData.password)
-        if(user_username && user_passw){
-            console.log("Email and password matching")
-            //TODO on succesfull login authorize the user
-        }else{
-            message = 'Incorrect email or password!';
+  app.post('/user-login', async (req, res) => {
+    try {
+      const requestData = req.body; // receive the request
+      let message = 'POST request successfully received, logging in';
+      console.log(requestData);
+  
+      // Check if email and password exist
+      if (requestData.username && requestData.password) {
+        // Check if email and password match the stored data
+        const user_username = users.find((user) => user.username === requestData.username);
+        const user_passw = users.find((user) => user.password === requestData.password);
+  
+        if (user_username && user_passw) {
+          console.log("Email and password matching");
+  
+          const secretKey = 'zzz123';
+          const token = jwt.sign({ username: user_username }, secretKey, {
+            expiresIn: '6h',
+          });
+  
+          res.json({ message, token });
+        } else {
+          message = 'Incorrect email or password!';
+          res.status(401).json({ message });
         }
-    }else{
+      } else {
         message = 'Empty fields';
+        res.status(400).json({ message });
+      }
+  
+      console.log("Post endpoint called");
+    } catch (error) {
+      console.error('Error occurred:', error);
+      res.status(500).json({ message: 'An error occurred.' });
     }
-
-console.log("Post endpoint called")
-    
-    //TODO ENSURE USER EXISTS, IF EXISTS LOG HIM IN IF NOT DENY
-
-    res.json({ message });
   });
 
 
@@ -87,9 +95,20 @@ console.log("Post endpoint called")
     res.json({ message });
 });
 
-
   app.get("/status1", async (req, res) => {
     res.send("im online PROTECTED");
     console.log("[ENDPOINT] GET STATUS");
   });
 
+
+  app.use( //ROUTES UNDER THIS FUNCTION REQUIRES AUTHORIZATION
+    auth({
+      issuerBaseURL: 'http://127.0.0.1:5173',
+      audience: 'http://127.0.0.1:3000',
+    })
+  );
+
+
+  app.listen(port, hostname, () => {
+    console.log(`Server running at http://${hostname}:${port}/`);
+  });
