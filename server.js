@@ -36,12 +36,13 @@ app.post('/user-login', (req, res) => {
     console.log(requestData);
 
     //Check if email and password exists
-    if(requestData.email && requestData.password){
+    if(requestData.username && requestData.password){
         //Check if email and password matches the stored data
-        const user_email = users.find((user) => user.email === requestData.email)
+        const user_username = users.find((user) => user.username === requestData.username)
         const user_passw = users.find((user) => user.password === requestData.password)
-        if(user_email && user_passw){
-
+        if(user_username && user_passw){
+            console.log("Email and password matching")
+            //TODO on succesfull login authorize the user
         }else{
             message = 'Incorrect email or password!';
         }
@@ -63,12 +64,13 @@ console.log("Post endpoint called")
     let message = 'POST request successfully received, creating a new user'
 
     // Check if the required properties exist in the requestData object
-    if (requestData.email && requestData.full_name && requestData.password && requestData.phone_number) {
+    if (requestData.email && requestData.full_name && requestData.password && requestData.phone_number && requestData.username) {
         const user = {
             email: requestData.email,
             name: requestData.full_name,
             password: requestData.password,
-            phone: requestData.phone_number
+            phone: requestData.phone_number,
+            username: requestData.username
         };
 
         // If data is alright, add the user
