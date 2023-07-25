@@ -32,37 +32,58 @@ app.get("/status", async (req, res) => {
 app.post('/user-login', (req, res) => {
 
     const requestData = req.body; //receive the request
-    //console.log(requestData);
+    let message = 'POST request successfully received, logging in';
+    console.log(requestData);
+
+    //Check if email and password exists
+    if(requestData.email && requestData.password){
+        //Check if email and password matches the stored data
+        const user_email = users.find((user) => user.email === requestData.email)
+        const user_passw = users.find((user) => user.password === requestData.password)
+        if(user_email && user_passw){
+
+        }else{
+            message = 'Incorrect email or password!';
+        }
+    }else{
+        message = 'Empty fields';
+    }
 
 console.log("Post endpoint called")
     
     //TODO ENSURE USER EXISTS, IF EXISTS LOG HIM IN IF NOT DENY
 
-    res.json({ message: 'POST request successfully received' });
+    res.json({ message });
   });
 
 
-app.post('/user-register', (req, res) => {
-    
-    const requestData = req.body; //receive the register request
-    console.log(requestData);
+  app.post('/user-register', (req, res) => {
+    const requestData = req.body; // receive the register request
+    //console.log(requestData);
+    let message = 'POST request successfully received, creating a new user'
 
-    //TODO CHECK IF FIELDS ARE EXISTENT
+    // Check if the required properties exist in the requestData object
+    if (requestData.email && requestData.full_name && requestData.password && requestData.phone_number) {
+        const user = {
+            email: requestData.email,
+            name: requestData.full_name,
+            password: requestData.password,
+            phone: requestData.phone_number
+        };
 
-    const user = {
-        email: requestData.email,
-        name: requestData.name,
-        password: requestData.password
-        }
-        users.push(user); //Storing registered users without database
-    
-        console.log(users)
-    
-    //TODO CONNECT DATABASE
-    //TODO ensure all fields are as expected, if they are - create new user
+        // If data is alright, add the user
+        users.push(user);
+    } else {
+        message = 'Missing field, not creating a new user';
+    }
 
-    res.json({ message: 'POST request successfully received' });
-  });
+    console.log(users, users.length);
+
+    // TODO: CONNECT DATABASE
+    // TODO: Ensure all fields are as expected, if they are - create a new user
+
+    res.json({ message });
+});
 
 
   app.get("/status1", async (req, res) => {
