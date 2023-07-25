@@ -1,21 +1,24 @@
+require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require('cors')
 const { auth } = require('express-oauth2-jwt-bearer');
 const jwt = require('jsonwebtoken');
+const secretKey = process.env.SECRET_KEY;
 
 
 app.use(cors({
-    origin: "http://127.0.0.1:5173",
+    origin: "http://"+ process.env.FRONTEND,
 }))
 
 
 
 app.use(bodyParser.json());
 
-const hostname = '127.0.0.1';
-const port = 3000;
+const hostname = process.env.HOSTNAME;
+const port = process.env.PORT;
 
 let users = [];
 
@@ -43,7 +46,7 @@ app.get("/status", async (req, res) => {
         if (user_username && user_passw) {
           console.log("Email and password matching");
   
-          const secretKey = 'zzz123';
+          
           const token = jwt.sign({ username: user_username }, secretKey, {
             expiresIn: '6h',
           });
@@ -54,7 +57,7 @@ app.get("/status", async (req, res) => {
           res.status(401).json({ message });
         }
       } else {
-        message = 'Empty fields';
+        message = 'Empty fields'; 
         res.status(400).json({ message });
       }
   
@@ -95,10 +98,7 @@ app.get("/status", async (req, res) => {
     res.json({ message });
 });
 
-  app.get("/status1", async (req, res) => {
-    res.send("im online PROTECTED");
-    console.log("[ENDPOINT] GET STATUS");
-  });
+
 
 
   app.use( //ROUTES UNDER THIS FUNCTION REQUIRES AUTHORIZATION
@@ -108,6 +108,15 @@ app.get("/status", async (req, res) => {
     })
   );
 
+  app.get("/status1", auth, async (req, res) => {
+    try {
+    res.send("im online PROTECTED");
+    console.log("[ENDPOINT] GET STATUS");
+    } catch (error) {
+        res.send(error)
+    }
+    
+  });
 
   app.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
